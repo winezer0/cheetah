@@ -31,6 +31,10 @@ import string
 import random
 import requests
 import argparse
+import urllib3
+# 禁用安全请求警告
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 __program__ = 'cheetah'
 __version__ = '1.0.0'
@@ -47,7 +51,7 @@ reset = '\033[0m'
 
 def set_coding():
     if sys.version_info.major == 2:
-        if sys.getdefaultencoding() is not 'utf-8':
+        if sys.getdefaultencoding() != 'utf-8':
             reload(sys)
             sys.setdefaultencoding('utf-8')
 
@@ -127,7 +131,7 @@ def gen_random_header(options):
     with open('data/user-agent.list') as agent_file:
         agent_list = agent_file.readlines()
     random_agent = random.choice(agent_list).replace('\n', '')
-    reg = '[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+'
+    reg = r'[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+'
     header = {'Host': re.search(reg, options.url).group(0),
               'User-Agent': random_agent,
               'Accept': '*/*',
@@ -284,7 +288,7 @@ def detect_web(options):
 
     if options.server == 'detect':
         random_str = str(random.sample(string.printable, 5)).encode('hex')
-        reg = 'http(s)?:\/\/[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+'
+        reg = 'http(s)?://[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+'
         random_url = re.search(reg, options.url).group(0) + random_str
         random_rsp = requests.get(url=random_url, headers=header, verify=False)
         if random_rsp.status_code == 404:
